@@ -51,49 +51,56 @@ app.get('/api/notes', (request, response) => {
 .catch((error) => next(error));
 });
 
-// Función para generar un nuevo ID único para una nota.
-const generateId = () => {
-  const maxId = notes.length > 0
-    ? Math.max(...notes.map(n => n.id)) // Encuentra el ID más alto en las notas existentes.
-    : 0
-  return maxId + 1 // El nuevo ID será el mayor existente más uno.
-}
+
 
 // Endpoint para agregar una nueva nota.
+// Define una ruta POST en el servidor para manejar solicitudes en '/api/notes'.
 app.post('/api/notes', (request, response) => {
-  const body = request.body // Obtiene el cuerpo de la solicitud.
+  // Extrae el cuerpo de la solicitud (el contenido enviado por el cliente).
+  const body = request.body;
 
+  // Verifica si 'content' no está presente en el cuerpo de la solicitud.
+  // Si falta, responde con un código de estado 400 (Bad Request) y un mensaje de error.
   if (!body.content) {
-    // Si falta el contenido, responde con un error 400 (solicitud inválida).
-    return response.status(400).json({ 
-      error: 'content missing' 
-    })
+    return response.status(400).json({ error: 'content missing' });
   }
 
-  // Crea una nueva nota con el contenido recibido y un ID generado.
-  const note = {
+  // Crea una nueva instancia del modelo 'Note' con los datos proporcionados.
+  // - 'content': Toma el contenido enviado en la solicitud.
+  // - 'date': Usa la fecha enviada en la solicitud o genera la fecha actual si no se proporciona.
+  // - 'important': Usa el valor enviado o, si no se proporciona, lo establece en 'false' por defecto.
+  const note = new Note({
     content: body.content,
-    important: body.important || false, // Si no se especifica, `important` será falso.
-    id: generateId(),
-  }
+    date: body.date || new Date(),
+    important: body.important || false,
+  });
 
-  // Agrega la nueva nota a la lista existente.
-  notes = notes.concat(note)
+  // Intenta guardar la nueva nota en la base de datos.
+  note
+    .save()
+    .then((savedNote) => {
+      // Si se guarda con éxito, responde con el objeto de la nota guardada.
+      response.json(savedNote);
+    })
+    .catch((error) => {
+      // Si ocurre un error durante el guardado, responde con un código de estado 500 (Error interno del servidor).
+      response.status(500).json({ error: 'error saving note' });
+    });
+});
 
-  // Responde con la nueva nota en formato JSON.
-  response.json(note)
-})
 
 // Endpoint para obtener una nota específica por su ID.
+// Define una ruta GET en el servidor para manejar solicitudes en '/api/notes/:id'.
+// ':id' es un parámetro dinámico que permite capturar un identificador único (id).
 app.get('/api/notes/:id', (request, response) => {
-  const id = Number(request.params.id) // Convierte el ID recibido a un número.
-  const note = notes.find(note => note.id === id) // Busca la nota con el ID especificado.
-  if (note) {
-    response.json(note) // Si se encuentra, responde con la nota.
-  } else {
-    response.status(404).end() // Si no se encuentra, responde con un error 404.
-  }
-})
+  // Usa el modelo 'Note' para buscar una nota en la base de datos por su 'id'.
+  // El 'id' se obtiene de los parámetros de la URL mediante 'request.params.id'.
+  Note.findById(request.params.id).then((note) => { // Método findById de Mongoose
+    // Si se encuentra una nota con el 'id' especificado, responde con ella en formato JSON.
+    response.json(note);
+  });
+});
+
 
 // Endpoint para eliminar una nota por su ID.
 app.delete('/api/notes/:id', (request, response) => {
