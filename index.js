@@ -1,26 +1,14 @@
+//  Importar el archivo .env del dotenv *IMPORTANTE PONER PRIMERO QUE EL MODULO NOTE*
+require('dotenv').config()
 // Importa el módulo Express, que se utiliza para crear aplicaciones web en Node.js.
 const express = require('express')
 // Crea una instancia de la aplicación Express.
 const app = express()
+// Crea una instancia para importar el modelo de Mongoose
+const Note = require('./models/note')
 
-// Define una lista inicial de notas como datos simulados.
-let notes = [
-  {
-    id: 1,
-    content: "HTML is easy", // Contenido de la nota.
-    important: true          // Indica si la nota es importante.
-  },
-  {
-    id: 2,
-    content: "Browser can execute only JavaScript",
-    important: false
-  },
-  {
-    id: 3,
-    content: "GET and POST are the most important methods of HTTP protocol",
-    important: true
-  }
-]
+
+
 
 // Middleware para servir archivos estáticos desde la carpeta "dist".
 app.use(express.static('dist'))
@@ -57,8 +45,11 @@ app.get('/', (request, response) => {
 
 // Endpoint para obtener todas las notas.
 app.get('/api/notes', (request, response) => {
+  Note.find({}).then(notes =>{ // Obtiene las notas desde Mongo.js
   response.json(notes) // Responde con la lista de notas en formato JSON.
 })
+.catch((error) => next(error));
+});
 
 // Función para generar un nuevo ID único para una nota.
 const generateId = () => {
@@ -117,9 +108,9 @@ app.delete('/api/notes/:id', (request, response) => {
 app.use(unknownEndpoint)
 
 // Define el puerto en el que se ejecutará el servidor.
-// Si no está definido en las variables de entorno, usa el puerto 3001.
-const PORT = process.env.PORT || 3001
+const PORT = process.env.PORT
 // Inicia el servidor y muestra un mensaje indicando el puerto.
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`)
 })
+
