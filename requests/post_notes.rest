@@ -1,7 +1,8 @@
 POST http://localhost:3001/api/notes/
 Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6IkFkcmlhbiIsImlkIjoiNjc5YzAzMTY1MGY3ZDM0OWU1NzVmY2M3IiwiaWF0IjoxNzM4Mjc3Njg3LCJleHAiOjE3MzgyODEyODd9.AIguyGCgYS-1E3jzARX0BCpBDzFK6VXzuBp7uQ_VEp0
 
 {
-    "content": "VR Rest is a pretty handly tool",
+    "content": "Note to test changes",
     "important": true
 }

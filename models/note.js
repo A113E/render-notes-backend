@@ -1,31 +1,22 @@
 // Importa el módulo mongoose, que se utiliza para interactuar con MongoDB.
 const mongoose = require('mongoose')
 
-// Configura mongoose para no lanzar advertencias relacionadas con las consultas estrictas en MongoDB.
-mongoose.set('strictQuery', false)
-
-// Obtiene la URL de conexión a la base de datos desde las variables de entorno (archivo .env).
-const url = process.env.MONGODB_URI
-
-// Muestra en la consola la URL de conexión para asegurar que se está utilizando la correcta.
-console.log('connecting to', url)
-
-// Intenta conectar a la base de datos MongoDB utilizando la URL obtenida desde las variables de entorno.
-mongoose.connect(url)
-  .then(result => {
-    // Si la conexión es exitosa, muestra un mensaje indicando que se ha conectado correctamente.
-    console.log('connected to MongoDB')
-  })
-  .catch(error => {
-    // Si ocurre un error al intentar conectar, muestra un mensaje de error con el mensaje específico.
-    console.log('error connecting to MongoDB:', error.message)
-  })
 
 // Define el esquema para las "notas" en la base de datos MongoDB.
 const noteSchema = new mongoose.Schema({
-  content: String,   // Campo de tipo cadena que almacena el contenido de la nota.
+  // Campo de tipo cadena que almacena el contenido de la nota.
+  content: { // Reglas de validación
+    type: String, // Tipo de docuemnto Cadena
+    minLength: 5, // Mínimo 5 caracteres de longitud
+    required: true // Es obligatorio ponerlo
+  },
   date: Date,        // Campo de tipo fecha que almacena la fecha de la nota.
   important: Boolean,// Campo de tipo booleano que indica si la nota es importante o no.
+  // Matriz ID con los identificadores de usuario
+  user: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  }
 })
 
 // Configura cómo se debe transformar la nota cuando se convierta a formato JSON (por ejemplo, al enviarla a través de una API).
